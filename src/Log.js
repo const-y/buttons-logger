@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types'
+import df from 'date-fns/format';
 
 const Log = ({ log }) => {
   return (
@@ -7,10 +8,11 @@ const Log = ({ log }) => {
       {
         log.map((item, index) => {
           const { timestamp, index: btnIndex, timeout } = item;
+          const formattedDate = df(timestamp, 'HH:mm:ss dd.MM.yyyy');
 
           return (
             <div key={index}>
-              {`${timestamp.toLocaleString()}: Button ${btnIndex + 1} was pressed with ${timeout}s timeout`}
+              {`${formattedDate}: Button ${btnIndex + 1} was pressed with ${timeout}s timeout`}
             </div>
           );
         })

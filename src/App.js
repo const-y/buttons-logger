@@ -10,6 +10,9 @@ class App extends React.Component {
     queue: [],
   };
 
+  /**
+   * id таймера
+   */
   currentTimer = null;
 
   log = (index, timeout) => {
@@ -37,7 +40,8 @@ class App extends React.Component {
   };
 
   /**
-   *
+   * Извлечение индекса из очереди
+   * если очередь пустая возвращается null
    * @returns {*}
    */
   dequeue = () => {
@@ -54,25 +58,23 @@ class App extends React.Component {
     return el;
   };
 
-  delayedExec = index => {
+  /**
+   * Получаем индекс кнопки из очереди и пишем в лог со случайной задержкой
+   */
+  delayedExec = () => {
     const timeout = Math.floor(Math.random() * 10) + 1; // s
 
     this.currentTimer = setTimeout(() => {
+      const index = this.dequeue();
 
-      this.log(index, timeout); // s
-
-      const next = this.dequeue();
-
-      debugger
-
-      if (next !== null) {
-        this.delayedExec(next);
-        debugger
+      if (index !== null) {
+        this.log(index, timeout); // s
+        this.delayedExec();
       }
     }, timeout * 1000); // ms
   };
 
-  clear = () => {
+  reset = () => {
     clearTimeout(this.currentTimer);
     this.setState({
       logState: [],
@@ -83,11 +85,11 @@ class App extends React.Component {
   makeBtnHandler = index => () => {
     const { queue } = this.state;
 
-    if (queue.length === 0) { // queue is empty
+    if (queue.length === 0) { // очередь пустая, добавляем индекс и запускаем таймер
       this.enqueue(index, () => {
-        this.delayedExec(index);
+        this.delayedExec();
       });
-    } else {
+    } else { // задачи уже выполняются, просто добавляем индекс в очередь
       this.enqueue(index);
     }
   };
@@ -113,8 +115,8 @@ class App extends React.Component {
           </div>
           <Log log={logState}/>
           <div className="toolbar secondary">
-            <button onClick={this.clear}>
-              Clear
+            <button onClick={this.reset}>
+              Reset
             </button>
           </div>
 
