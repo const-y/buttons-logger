@@ -1,23 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './App.css';
 import Log from './Log';
 
 const buttons = [...Array(3)];
 
-function App() {
-  let currentTimer = null;
+class App extends React.Component {
+  state = {
+    logState: [],
+    queue: [],
+  };
 
-  /**
-   * Содержимое лога
-   */
-  const [logState, setLog] = useState([]);
+  currentTimer = null;
 
-  /**
-   * Очередь ызовов
-   */
-  const [queue, setQueue] = useState([]);
-
-  const log = (index, timeout) => {
+  log = (index, timeout) => {
     const timestamp = new Date();
     const logItem = {
       timestamp,
@@ -25,83 +20,109 @@ function App() {
       timeout,
     };
 
-    setLog(state => [...state, logItem]);
+    this.setState(state => ({
+      logState: [...state.logState, logItem]
+    }));
   };
 
   /**
    * Добавление в очередь
    * @param index
+   * @param cb
    */
-  const enqueue = index => {
-    setQueue([...queue, index]);
-
-    console.log('queue = ', queue);
+  enqueue = (index, cb) => {
+    this.setState( state => ({
+      queue: [...state.queue, index]
+    }), cb);
   };
 
-  const dequeue = queue => {
+  /**
+   *
+   * @returns {*}
+   */
+  dequeue = () => {
+    const { queue } = this.state;
+    if (queue.length === 0) {
+      return null;
+    }
+
     const _queue = [...queue];
     const el = _queue.shift();
 
-    setQueue(_queue);
+    this.setState({ queue: _queue });
 
     return el;
   };
 
-  const delayedExec = index => {
+  delayedExec = index => {
     const timeout = Math.floor(Math.random() * 10) + 1; // s
 
-    currentTimer = setTimeout(() => {
-      log(index, timeout); // s
+    this.currentTimer = setTimeout(() => {
 
-      const next = dequeue(queue);
+      this.log(index, timeout); // s
 
-      if (next) {
-        delayedExec(next);
+      const next = this.dequeue();
+
+      debugger
+
+      if (next !== null) {
+        this.delayedExec(next);
+        debugger
       }
     }, timeout * 1000); // ms
   };
 
-  const clear = () => {
-    clearTimeout(currentTimer);
-    setLog([]);
-    setQueue([]);
+  clear = () => {
+    clearTimeout(this.currentTimer);
+    this.setState({
+      logState: [],
+      queue: [],
+    });
   };
 
-  const makeBtnHandler = index => () => {
+  makeBtnHandler = index => () => {
+    const { queue } = this.state;
+
     if (queue.length === 0) { // queue is empty
-      enqueue(index);
-      delayedExec(index);
+      this.enqueue(index, () => {
+        this.delayedExec(index);
+      });
     } else {
-      enqueue(index);
+      this.enqueue(index);
     }
   };
 
-  return (
-    <div className="App">
-      <div className="container">
-        <div className="toolbar main">
-          {
-            buttons.map((btn, index) => (
-              <button
-                key={index}
-                onClick={makeBtnHandler(index)}
-              >
-                Button {index + 1}
-              </button>
-            ))
-          }
-        </div>
-        <Log log={logState} />
-        <div className="toolbar secondary">
-          <button onClick={clear}>
-            Clear
-          </button>
+
+  render() {
+    const { logState } = this.state;
+
+    return (
+      <div className="App">
+        <div className="container">
+          <div className="toolbar main">
+            {
+              buttons.map((btn, index) => (
+                <button
+                  key={index}
+                  onClick={this.makeBtnHandler(index)}
+                >
+                  Button {index + 1}
+                </button>
+              ))
+            }
+          </div>
+          <Log log={logState}/>
+          <div className="toolbar secondary">
+            <button onClick={this.clear}>
+              Clear
+            </button>
+          </div>
+
         </div>
 
       </div>
-
-    </div>
-  );
+    );
+  }
 }
 
 export default App;
