@@ -6,4 +6,24 @@
   width: 900px;
   margin: 0 auto;
   display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  display: flex;
+  padding: 10px 0;
+}
+
+.main {
+  justify-content: space-between;
+}
+
+.secondary {
+  justify-content: flex-end;
+}
+
+.log {
+  height: 300px;
+  border: 1px solid black;
+  overflow: scroll;
 }
