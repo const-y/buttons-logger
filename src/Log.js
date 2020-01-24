@@ -5,12 +5,12 @@ const Log = ({ log }) => {
   return (
     <div className="log">
       {
-        log.map(item => {
-          const { timestamp, index, timeout } = item;
+        log.map((item, index) => {
+          const { timestamp, index: btnIndex, timeout } = item;
 
           return (
-            <div>
-              {`${timestamp}: Button ${index} was pressed with ${timeout}s timeout`}
+            <div key={index}>
+              {`${timestamp.toLocaleString()}: Button ${btnIndex + 1} was pressed with ${timeout}s timeout`}
             </div>
           );
         })

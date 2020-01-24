@@ -5,6 +5,8 @@ import Log from './Log';
 const buttons = [...Array(3)];
 
 function App() {
+  let currentTimer = null;
+
   /**
    * Содержимое лога
    */
@@ -23,15 +25,7 @@ function App() {
       timeout,
     };
 
-    setLog([...logState, logItem]);
-  };
-
-  const delayedExec = index => {
-    const timeout = Math.floor(Math.random() * 10) + 1; // s
-
-    setTimeout(() => {
-      log(index, timeout); // s
-    }, timeout * 1000); // ms
+    setLog(state => [...state, logItem]);
   };
 
   /**
@@ -40,15 +34,46 @@ function App() {
    */
   const enqueue = index => {
     setQueue([...queue, index]);
+
+    console.log('queue = ', queue);
   };
 
-  const makeBtnHandler = index => () => {
-    delayedExec(index);
+  const dequeue = queue => {
+    const _queue = [...queue];
+    const el = _queue.shift();
+
+    setQueue(_queue);
+
+    return el;
+  };
+
+  const delayedExec = index => {
+    const timeout = Math.floor(Math.random() * 10) + 1; // s
+
+    currentTimer = setTimeout(() => {
+      log(index, timeout); // s
+
+      const next = dequeue(queue);
+
+      if (next) {
+        delayedExec(next);
+      }
+    }, timeout * 1000); // ms
   };
 
   const clear = () => {
+    clearTimeout(currentTimer);
     setLog([]);
     setQueue([]);
+  };
+
+  const makeBtnHandler = index => () => {
+    if (queue.length === 0) { // queue is empty
+      enqueue(index);
+      delayedExec(index);
+    } else {
+      enqueue(index);
+    }
   };
 
   return (
@@ -57,7 +82,12 @@ function App() {
         <div className="toolbar main">
           {
             buttons.map((btn, index) => (
-              <button onClick={makeBtnHandler(index)}>Кнопка {index}</button>
+              <button
+                key={index}
+                onClick={makeBtnHandler(index)}
+              >
+                Button {index + 1}
+              </button>
             ))
           }
         </div>
